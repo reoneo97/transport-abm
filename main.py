@@ -9,6 +9,7 @@ def create_graph(path = "./cfg/locations.csv"):
     
     for i in df.iterrows():
         print(i)
+        print("yo")
 
 
 if __name__ == "__main__":
