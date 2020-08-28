@@ -1,13 +1,18 @@
 from env.env import *
 from agents import *
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-def create_graph():
+def create_graph(path = "./cfg/locations.csv"):
+    df = pd.read_csv(path)
     
+    for i in df.iterrows():
+        print(i)
+        print("yo")
+
 
 if __name__ == "__main__":
     hi = Graph()
-    #hi.add_edge("Paya Lebar","Woodlands",5)
-    pl = Location("Paya Lebar")
-    wl = Location("Woodlands")
-    hi.add_edge(pl,wl,5)
-    print(hi)
+    create_graph()
+
