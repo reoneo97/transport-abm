@@ -14,7 +14,6 @@ def create_env(path = "./cfg/locations.csv"):
         graph.add_edge(locations[i[0]],locations[i[1]],i[2])
     env = Environment(graph, locations)
     return env
-
         
 
 
