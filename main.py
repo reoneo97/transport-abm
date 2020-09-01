@@ -1,5 +1,5 @@
 from env.env import *
-from agents import *
+from agents.agent import *
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,8 +18,10 @@ def create_env(path = "./cfg/locations.csv"):
 
 
 if __name__ == "__main__": 
-    gp = create_env()
-    print(gp.paths)
+    env = create_env()
+    a = Agent(env,2000,0.5,"Bishan","Tiong Bahru")
+    print(a.path_to_dest)
+    print(a.path_to_home)
     
 
 
