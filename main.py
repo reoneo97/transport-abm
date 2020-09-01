@@ -20,10 +20,7 @@ def create_env(path = "./cfg/locations.csv"):
 
 if __name__ == "__main__": 
     gp = create_env()
-    # print(gp.graph.apsp())
-    # print(gp.graph.nodes)
-    print(gp.graph.data)
-    gp.graph.shortest_path("Tampines")
+    print(gp.paths)
     
 
 
