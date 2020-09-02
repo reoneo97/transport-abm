@@ -1,16 +1,11 @@
 # transport-abm
 Project using an Agent-based Modelling approach to analyse traffic congestion in Singapore
 
-
+## Environment
+The environment mainly consists of an array of locations which will be populated by agents and a graph object which represents the network.
 
 ### File Structure
-<<<<<<< HEAD
 
-├───agents
-├───cfg
-└───env
-=======
 ├───agents 
 ├───cfg 
 └───env
->>>>>>> 3547a98f0f328d7eb707514fcd2bd27fa1a8b82a
