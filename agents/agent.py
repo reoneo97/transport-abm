@@ -60,3 +60,6 @@ class Employee(Agent):
 
     def transport_mode(self):
         pass
+
+
+input_dir = "../data/"
