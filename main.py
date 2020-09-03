@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def create_env(path = "./cfg/locations.csv"):
+def create_env(path = "./data/locations.csv"):
     #Function to create the network 
     graph = Graph()
     df = pd.read_csv(path)
