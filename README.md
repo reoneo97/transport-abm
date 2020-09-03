@@ -1,6 +1,9 @@
 # transport-abm
 Project using an Agent-based Modelling approach to analyse traffic congestion in Singapore
 
+## Agent
+The agent is a object to store all the of the person
+
 ## Environment
 The environment mainly consists of an array of locations which will be populated by agents and a graph object which represents the network.
 
