@@ -22,3 +22,41 @@ class Agent:
         elif self.current_location.transit == True:
             pass
 
+
+class Student(Agent):
+    def home(self):
+        pass
+
+    def destination(self):
+        path = os.path.join(input_dir, 'cn4238r_schools.csv')
+        data = pd.read_csv(path)
+
+        # find total no. of schools
+        total = data.sum(axis=0)
+        probs = []
+        schs_column = data.iloc[:, 1]
+        schs = list(schs_column)
+
+        # find probability for each region
+        for number in schs:
+            probability = number / total[1]
+            probs.append(probability)
+
+        # get destination for student
+        dest_no = np.random.choice(len(probs), p=probs)
+        dest = school_locations.locations[dest_no]
+        print(dest)
+
+    def transport_mode(self):
+        pass
+
+
+class Employee(Agent):
+    def home(self):
+        pass
+
+    def destination(self):
+        pass
+
+    def transport_mode(self):
+        pass
