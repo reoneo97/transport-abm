@@ -1,24 +1,37 @@
 class Agent:
-    def __init__(self,env,income,prob,home,dest,work_time):
+    def __init__(self,env,income,prob,home,dest,start_work_time,end_work_time):
         self.income = income
         self.prob = prob
-        self.home = home
-        loc2idx = env.loc2idx
-        self.dest = dest
-        self.work_time = work_time
+        self.home = env.locmap[home]
+        self.dest = env.locmap[dest]
+        self.start_work_time = start_work_time
+        self.end_work_time = end_work_time
 
-        self.path_to_dest = env.paths[home][loc2idx[dest]]
-        self.path_to_home = env.paths[dest][loc2idx[home]]
+
+        self.path_to_dest = env.paths[home][env.loc2idx[dest]]
+        self.path_to_home = self.path_to_dest[::-1]
         self.env = env
-        self.current_location = home
+        self.current_location = self.home
         self.delay = 0
-    def move(self, loc1, loc2):
 
+        self.queue = None #This is a queue which will indicate if the person is travelling 
+    def move_work(self):
+        self.queue = self.path_to_dest[:]
         
-        pass
-    def update(self):
-        if self.env.time > self.work_time:
-            self.move(self.home,self.dest)
-        elif self.current_location.transit == True:
+        print("Agent going to work")
+
+
+    def move_home(self):
+        self.queue = self.path_to_dest[:]
+        print("Agent going home")
+    def update(self,current_time,timestep):
+        if self.queue:
             pass
+
+        #Check if the agent should go work/go home
+        elif current_time.time() > self.start_work_time:
+            self.move_work()
+            pass
+        elif current_time.time() > self.end_work_time:
+            self.move_home()
 
