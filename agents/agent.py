@@ -15,23 +15,22 @@ class Agent:
         self.delay = 0
 
         self.queue = None #This is a queue which will indicate if the person is travelling 
+  
     def move_work(self):
-        self.queue = self.path_to_dest[:]
-        
+        self.queue = self.path_to_dest[1:]
         print("Agent going to work")
-
-
     def move_home(self):
-        self.queue = self.path_to_dest[:]
+        self.queue = self.path_to_dest[1:]
         print("Agent going home")
+
     def update(self,current_time,timestep):
-        if self.queue:
-            pass
-
         #Check if the agent should go work/go home
-        elif current_time.time() > self.start_work_time:
+        if current_time.time() > self.start_work_time and not self.queue:
             self.move_work()
-            pass
-        elif current_time.time() > self.end_work_time:
+        elif current_time.time() > self.end_work_time and not self.queue:
             self.move_home()
+        elif self.queue:
+            return self.queue.pop(0)
 
+    def update_delay(self,timestep):
+        self.delay -= timestep
