@@ -32,9 +32,8 @@ if __name__ == "__main__":
     env.locations
     a = env.add_agent(agent_config=0)
     
-    for i in range(10):
+    for i in range(30):
         env.tick()
         if i >5:
             env.check_locations()
-    print(a.home)
     
