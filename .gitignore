@@ -32,7 +32,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
-
+.DS_STORE
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -102,13 +102,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+
 
 # Spyder project settings
 .spyderproject
