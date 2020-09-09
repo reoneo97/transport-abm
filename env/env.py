@@ -28,9 +28,7 @@ class TransitLocation(Location):
         agent.delay = self.wait_time
         self.agents.append(agent)
     def update(self):
-        ###########################################
-        ## THIS IS WHAT I NEED TO WORK ON NEXT   ##
-        ###########################################
+
         to_remove = []
         for i,a in enumerate(self.agents):
             w = a.update_delay(5)
