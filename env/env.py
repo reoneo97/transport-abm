@@ -169,7 +169,7 @@ class Environment:
     def add_agent(self,agent_config, n=1):
         #TODO: Agent paths should come frome the config file itself 
         agent_config = {"income":0.5, "prob":0.5,"home":"Bishan","dest": "Tuas","start_work_time": time(hour = 7, minute = 30),
-                        "end_work_time": time(hour = 22, minute = 30)}
+                        "end_work_time": time(hour = 10, minute = 30)}
         start_loc = agent_config["home"]
         a = Agent(env = self,**agent_config)
         self.locmap[start_loc].add(a)

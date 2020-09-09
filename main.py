@@ -24,16 +24,21 @@ def create_env(path = "./data/locations.csv"):
     env = Environment(graph, locations,transit_locations,config)
     return env
         
+import sys 
 
 
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
+    stdoutOrigin=sys.stdout 
+    sys.stdout = open("log.txt", "w") 
     env = create_env()
     print({loc.name:loc for loc in env.locations})
     env.locations
     a = env.add_agent(agent_config=0)
     
-    for i in range(30):
+    for i in range(500):
         env.tick()
-        if i >5:
-            env.check_locations()
+        env.check_locations()
+    sys.stdout.close()
+    sys.stdout=stdoutOrigin
     
