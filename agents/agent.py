@@ -21,12 +21,10 @@ class Agent:
     def move_work(self):
         self.queue = self.path_to_dest[1:]
         self.status = 1
-        print("Agent going to work")
 
     def move_home(self):
         self.queue = self.path_to_home[1:]
         self.status =2
-        print("Agent going home")
     def reset(self):
         self.status = 0
 
@@ -38,15 +36,12 @@ class Agent:
             self.move_home()
         elif current_time.time() == time(hour = 0) and self.status== 2:
             self.reset()
-        
-
         elif self.queue:
             return self.queue.pop(0)
         
 
     def update_delay(self,timestep):
         self.delay -= timestep
-        print(self.delay)
         return self.delay 
 
 class Student(Agent):
