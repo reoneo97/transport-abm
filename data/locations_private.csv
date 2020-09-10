@@ -1,0 +1,32 @@
+﻿loc1,loc2,travel-time
+Tuas,CCK,25
+Tuas,Jurong,20
+Jurong,CCK,15
+Jurong,Buona,12
+Jurong,Toa Payoh,20
+CCK,Woodlands,15
+CCK,CBD,20
+CCK,Buona,20
+Woodlands,Bishan,15
+Woodlands,Punggol,15
+Buona,CBD,12
+Buona,Tiong Bahru,10
+Tiong Bahru,Town,7
+Tiong Bahru,CBD,10
+Tiong Bahru,Paya Lebar,15
+Tiong Bahru,Tampines,20
+Town,Paya Lebar,15
+Town,Tampines,20
+Town,CBD,10
+CBD,Paya Lebar,12
+CBD,Toa Payoh,8
+Toa Payoh,Bishan,8
+Toa Payoh,Paya Lebar,7
+Toa Payoh,Serangoon,8
+Bishan,Punggol,20
+Bishan,Serangoon,10
+Serangoon,Punggol,15
+Serangoon,Paya Lebar,10
+Punggol,Paya Lebar,10
+Punggol,Tampines,20
+Paya Lebar,Tampines,10
