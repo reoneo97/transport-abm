@@ -6,8 +6,9 @@ The environment mainly consists of an array of locations which will be populated
 
 ### File Structure
 
-├───agents 
 
+```bash
+├───agents 
 ├───cfg
- 
 └───env
+```
