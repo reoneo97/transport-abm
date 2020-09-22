@@ -1,3 +1,4 @@
+from datetime import timedelta, date, time,datetime
 class Agent:
     def __init__(self, env, income, prob, home, dest, start_work_time, end_work_time):
         self.income = income
@@ -19,27 +20,30 @@ class Agent:
     def move_work(self):
         self.queue = self.path_to_dest[1:]
         self.status = 1
-        print("Agent going to work")
+        
+
 
     def move_home(self):
-        self.queue = self.path_to_dest[1:]
+        self.queue = self.path_to_home[1:]
+        self.status =2
+    def reset(self):
         self.status = 0
-        print("Agent going home")
 
-    def update(self, current_time, timestep):
-        # Check if the agent should go work/go home
-        if current_time.time() > self.start_work_time and not self.status:
+    def update(self,current_time,timestep):
+        #Check if the agent should go work/go home
+        if current_time.time() > self.start_work_time and self.status == 0 and not self.queue:
             self.move_work()
-        elif current_time.time() > self.end_work_time and self.status:
+        elif current_time.time() > self.end_work_time and self.status == 1 and not self.queue:
             self.move_home()
+        elif current_time.time() == time(hour = 0) and self.status== 2:
+            self.reset()
         elif self.queue:
             return self.queue.pop(0)
+        
 
     def update_delay(self, timestep):
         self.delay -= timestep
-        print(self.delay)
-        return self.delay
-
+        return self.delay 
 
 class Student(Agent):
     def income(self):

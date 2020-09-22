@@ -10,7 +10,7 @@ class Location:
     def describe(self):
         #Function to return all the important information about the location
         #ie. 
-        print([a for a in self.agents])
+        print(self.name,":",len(self.agents))
     
     def add(self,agent):
         self.agents.append(agent)
@@ -28,25 +28,22 @@ class TransitLocation(Location):
         agent.delay = self.wait_time
         self.agents.append(agent)
     def update(self):
-        ###########################################
-        ## THIS IS WHAT I NEED TO WORK ON NEXT   ##
-        ###########################################
+
         to_remove = []
         for i,a in enumerate(self.agents):
             w = a.update_delay(5)
             if w <= 0:
-                print("Agent should leave")
                 to_remove.append(i)
         for idx in to_remove:
             a = self.agents.pop(idx)
             self.end.add(a)
 
         
-    def describe(self):
+    def describe(self,verbose = True):
         #Function to return all the important information about the location
         #ie. 
-        print([(a,a.delay) for a in self.agents])
         
+        print(self.name,":",len(self.agents))
 
 
 
@@ -118,7 +115,7 @@ class Graph:
         return paths,solved
 
 class Environment:
-    def __init__(self,graph,locations,transit_locations,cfg = None):
+    def __init__(self,graph,locations,transit_locations,cfg = None,log_path = "../logs/log.txt"):
         self.graph = graph
         self.locations = locations
         self.transit_locations= transit_locations
@@ -127,7 +124,7 @@ class Environment:
 
         self.loc2idx = graph.loc2idx
         self.locmap = {loc.name: loc for loc in (locations + transit_locations)}
-
+        self.log_path = log_path
 
         self.timestep = timedelta(minutes=5)
         self.start_time = time(hour = 7)
@@ -145,9 +142,9 @@ class Environment:
 
         #Update Transit Locations
         for loc in self.locations:
+            #TODO: To add functionality such that time taken will increase if there transit location is unable to accomodate the number of people
             for agent in loc.agents:
                 dest = agent.update(self.time, self.timestep) 
-                print("Destination",dest)
                 if dest:
                     new_loc = self.locmap[loc.name+"->"+dest]
                     self.move_agent(agent,loc,new_loc)
@@ -169,7 +166,7 @@ class Environment:
     def add_agent(self,agent_config, n=1):
         #TODO: Agent paths should come frome the config file itself 
         agent_config = {"income":0.5, "prob":0.5,"home":"Bishan","dest": "Tuas","start_work_time": time(hour = 7, minute = 30),
-                        "end_work_time": time(hour = 22, minute = 30)}
+                        "end_work_time": time(hour = 10, minute = 30)}
         start_loc = agent_config["home"]
         a = Agent(env = self,**agent_config)
         self.locmap[start_loc].add(a)
