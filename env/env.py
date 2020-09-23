@@ -115,7 +115,7 @@ class Graph:
         return paths,solved
 
 class Environment:
-    def __init__(self,graph,locations,transit_locations,cfg = None,log_path = "../logs/log.txt"):
+    def __init__(self,graph,private_graph,locations,transit_locations,cfg = None,log_path = "../logs/log.txt"):
         self.graph = graph
         self.locations = locations
         self.transit_locations= transit_locations

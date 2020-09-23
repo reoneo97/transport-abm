@@ -8,15 +8,17 @@ from easydict import EasyDict
 from tqdm import tqdm
 import sys 
 
-def create_env(path = "./data/locations.csv"):
+def create_env(path = "./data/locations.csv",private_path = "./data/locations_private.csv"):
     #Function to read the csv file of locations and the connectivity and return a graph
     graph = Graph()
+    graph2 = Graph()
     df = pd.read_csv(path)
 
     locations_str = set(df["loc1"].tolist()+df["loc2"].tolist())
     loc_dict = {i:Location(i) for i in locations_str}
     locations = list(loc_dict.values())
     transit_locations = []
+
     for i in df.values.tolist():
         graph.add_edge(loc_dict[i[0]],loc_dict[i[1]],i[2])
         transit1 = i[0]+"->"+i[1]
@@ -24,7 +26,9 @@ def create_env(path = "./data/locations.csv"):
         transit_locations.append(TransitLocation(transit1,loc_dict[i[1]],i[2]))
         transit_locations.append(TransitLocation(transit2,loc_dict[i[0]],i[2]))
     config = ""
-    env = Environment(graph, locations,transit_locations,config)
+
+    df2 = df = pd.read_csv(private_path)
+    env = Environment(graph, graph2, locations,transit_locations,config)
     return env
 
 def createAgents():
