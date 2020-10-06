@@ -52,7 +52,6 @@ class Graph:
     def __init__(self):
         self.data = {}
         self.nodes = []
-        self.distances = None
         self.V = 0
         self.loc2idx = None
 
@@ -78,6 +77,7 @@ class Graph:
         #Shortest Path Algo based on Djikstra's Algorithm but using linear search instead of Priority Queue
         if self.loc2idx == None:
             self.loc2idx = {v:i for i,v in enumerate(self.nodes)}
+
         def find_entry(ls, name):
             #Helper function to find items inside the queue
             for i in ls:
@@ -120,21 +120,34 @@ class Environment:
         self.locations = locations
         self.transit_locations= transit_locations
         self.paths = {}
-        self.generate_paths()
-
-        self.loc2idx = graph.loc2idx
+        
         self.locmap = {loc.name: loc for loc in (locations + transit_locations)}
         self.log_path = log_path
 
         self.timestep = timedelta(minutes=5)
-        self.start_time = time(hour = 7)
+        self.start_time = time(hour = 0)
         self.time = datetime(2020,1,1,hour = 7)
         self.date = 0
-    
+        self.generate_paths()
+        self.loc2idx = graph.loc2idx
+        self.generate_travel_times()
+
     def generate_paths(self):
+        self.travel_times = {}
         for loc in self.graph.nodes:
-            loc_paths,_ = self.graph.shortest_path(loc)
+            loc_paths,travel_time = self.graph.shortest_path(loc)
             self.paths[loc] = loc_paths
+            self.travel_times[loc] = travel_time
+
+    def generate_travel_times(self):
+        travel_times = np.zeros((14,14))
+        for k,v in self.travel_times.items():
+            row = self.loc2idx[k]
+            for (t,dest) in v:
+                col = self.loc2idx[dest]
+                travel_times[row,col] = t
+        self.travel_times = travel_times
+        
 
     def tick(self):
         #Important function which basically signifies 1 timestep in the model

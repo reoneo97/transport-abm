@@ -1,6 +1,6 @@
 from datetime import timedelta, date, time,datetime
 class Agent:
-    def __init__(self, env, income, prob, home, dest, start_work_time, end_work_time):
+    def __init__(self, env, prob, home, dest, start_work_time, end_work_time, income =0):
         self.income = income
         self.prob = prob
         self.home = env.locmap[home]
@@ -20,8 +20,6 @@ class Agent:
     def move_work(self):
         self.queue = self.path_to_dest[1:]
         self.status = 1
-        
-
 
     def move_home(self):
         self.queue = self.path_to_home[1:]
