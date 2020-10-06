@@ -28,13 +28,12 @@ class TransitLocation(Location):
         agent.delay = self.wait_time
         self.agents.append(agent)
     def update(self):
-
         to_remove = []
         for i,a in enumerate(self.agents):
             w = a.update_delay(5)
             if w <= 0:
                 to_remove.append(i)
-        for idx in to_remove:
+        for idx in to_remove[::-1]:
             a = self.agents.pop(idx)
             self.end.add(a)
 
@@ -126,7 +125,7 @@ class Environment:
 
         self.timestep = timedelta(minutes=5)
         self.start_time = time(hour = 0)
-        self.time = datetime(2020,1,1,hour = 7)
+        self.time = datetime(2020,1,1,hour = 4)
         self.date = 0
         self.generate_paths()
         self.loc2idx = graph.loc2idx
@@ -155,7 +154,8 @@ class Environment:
 
         #Update Transit Locations
         for loc in self.locations:
-            #TODO: To add functionality such that time taken will increase if there transit location is unable to accomodate the number of people
+            #TODO: To add functionality such that time taken will increase if the
+            # transit location is unable to accomodate the number of people
             for agent in loc.agents:
                 dest = agent.update(self.time, self.timestep) 
                 if dest:
@@ -176,10 +176,8 @@ class Environment:
                 location.describe()
 
 
-    def add_agent(self,agent_config, n=1):
+    def add_agent(self,agent_config):
         #TODO: Agent paths should come frome the config file itself 
-        agent_config = {"income":0.5, "prob":0.5,"home":"Bishan","dest": "Tuas","start_work_time": time(hour = 7, minute = 30),
-                        "end_work_time": time(hour = 10, minute = 30)}
         start_loc = agent_config["home"]
         a = Agent(env = self,**agent_config)
         self.locmap[start_loc].add(a)

@@ -1,8 +1,6 @@
 from datetime import timedelta, date, time,datetime
 class Agent:
-    def __init__(self, env, prob, home, dest, start_work_time, end_work_time, income =0):
-        self.income = income
-        self.prob = prob
+    def __init__(self, env, home, dest, start_work_time, end_work_time):
         self.home = env.locmap[home]
         self.dest = env.locmap[dest]
         self.start_work_time = start_work_time
@@ -44,14 +42,6 @@ class Agent:
         return self.delay 
 
 class Student(Agent):
-    def income(self):
-        pass
-
-    def transport_prob(self):
-        pass
-
-    def home(self):
-        pass
 
     def destination(self):
         path = os.path.join(input_dir, 'cn4238r_schools.csv')
