@@ -10,7 +10,7 @@ class Location:
     def describe(self):
         #Function to return all the important information about the location
         #ie. 
-        print(self.name,":",len(self.agents))
+        print(f"{self.name}:{len(self.agents)}")
     
     def add(self,agent):
         self.agents.append(agent)
@@ -38,11 +38,6 @@ class TransitLocation(Location):
             self.end.add(a)
 
         
-    def describe(self,verbose = True):
-        #Function to return all the important information about the location
-        #ie. 
-        
-        print(self.name,":",len(self.agents))
 
 
 
@@ -125,7 +120,7 @@ class Environment:
 
         self.timestep = timedelta(minutes=5)
         self.start_time = time(hour = 0)
-        self.time = datetime(2020,1,1,hour = 4)
+        self.time = datetime(2020,1,1,hour = 5)
         self.date = 0
         self.generate_paths()
         self.loc2idx = graph.loc2idx
@@ -172,12 +167,10 @@ class Environment:
         #Function to check if everyone is at home
         for location in self.locmap.values():
             if location.agents:
-                print("=========",location.name,"=========")
                 location.describe()
 
 
     def add_agent(self,agent_config):
-        #TODO: Agent paths should come frome the config file itself 
         start_loc = agent_config["home"]
         a = Agent(env = self,**agent_config)
         self.locmap[start_loc].add(a)

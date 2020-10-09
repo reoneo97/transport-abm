@@ -7,6 +7,9 @@ from utils import *
 from easydict import EasyDict
 from tqdm import tqdm
 import sys 
+import random
+
+
 
 def create_env(path = "./data/locations.csv",private_path = "./data/locations_private.csv"):
     #Function to read the csv file of locations and the connectivity and return a graph
@@ -29,19 +32,20 @@ def create_env(path = "./data/locations.csv",private_path = "./data/locations_pr
     env = Environment(graph, graph2, locations,transit_locations,config)
     return env
 
-def createAgents(cfg,loc2idx,travel_times, n_agents = 11000):
+def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
     '''
      agent_config = {"home":"Bishan","dest": "Tuas","start_work_time": time(hour = 7, minute = 30),
                     "end_work_time": time(hour = 10, minute = 30)}    
     The start_work_time here will be the time where the agent leaves the house. This already takes into
     account the travel time required to travel to the workplace. Leave time will of course be dependent only 
     on working/schooling hours
+    n_agents is the number of agents to simulate 
 
     '''
     locations = cfg.Locations
     #Creating Students
     # 3 Paramters which we have to draw from which is the 2 locations and the start_time
-    n_stud = int(cfg.prob_student*n_agents)
+    n_stud = int(cfg.prob_student*n_agents*1.1)
     stud_homes = np.random.choice(locations,size = n_stud,p = cfg.prob_student_home)
     stud_schools = np.random.choice(locations,size = n_stud,p = cfg.prob_student_home)
     school_start = np.random.choice(cfg.school_start, size = n_stud)
@@ -60,7 +64,7 @@ def createAgents(cfg,loc2idx,travel_times, n_agents = 11000):
         agent_cfgs.append(agent_config)
 
     #Creating Adults
-    n_emp = int(cfg.prob_employee*n_agents+1)
+    n_emp = int(cfg.prob_employee*n_agents*1.1)
 
     default_start = datetime.combine(date.today(), time(hour = 9))
 
@@ -79,8 +83,9 @@ def createAgents(cfg,loc2idx,travel_times, n_agents = 11000):
         start_time = start - timedelta(minutes = time_diff)
         agent_config = {"home":i,"dest":j,"start_work_time":start_time.time(),"end_work_time":end.time()}  
         agent_cfgs.append(agent_config)      
-    print(dupes)
-    return agent_cfgs
+
+    random.shuffle(agent_cfgs)
+    return agent_cfgs[:n_agents]
 
 def generateConfig(path = "data/locations_data.csv"):
     #Function to generate the configuration file such as probability etc. from data that we have obtained
@@ -113,7 +118,7 @@ def generateConfig(path = "data/locations_data.csv"):
 
     #Working Hours
     cfg["work_hours_prob"] = [0.05,0.2,0.5,0.2,0.05]
-    cfg["work_hours"] = [timedelta(7+i) for i in range(5)]
+    cfg["work_hours"] = [timedelta(hours = (7+i)) for i in range(5)]
     cfg = EasyDict(cfg)
     return cfg
     
@@ -127,13 +132,30 @@ def add_time(t,t_delta):
 
 
 if __name__ == "__main__":
-
+    to_log = True
+    np.random.seed(73)
+    if to_log:    
+        stdoutOrigin=sys.stdout 
+        sys.stdout = open("logs/log.txt", "w") 
     env = create_env()
-    # print({loc.name:loc for loc in env.locations})
+    all_locs = [loc.name for loc in env.locations + env.transit_locations]
+    print("Initializing Log")
+    print("="*80)
+    print("List of all Locations:")
+    for i in all_locs:print(i)
     cfg = generateConfig()          
     loc2idx = env.loc2idx
     travel_times = env.travel_times
-
-    agent_configs = createAgents(cfg,loc2idx,travel_times) 
+    agent_configs = createAgents(cfg,loc2idx,travel_times)
+    print("="*80)
+    print("Number of Agents:",len(agent_configs))
+    print("="*80)
     for i in agent_configs:
         env.add_agent(i)
+    
+    for i in tqdm(range(10000)):
+         env.tick()
+         env.check_locations()
+    if to_log:
+        sys.stdout.close()
+        sys.stdout=stdoutOrigin
