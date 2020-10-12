@@ -11,7 +11,7 @@ import random
 
 
 
-def create_env(path = "./data/locations.csv",private_path = "./data/locations_private.csv"):
+def create_env(path = "./data/locations.csv"):
     #Function to read the csv file of locations and the connectivity and return a graph
     graph = Graph()
     graph2 = Graph()
@@ -29,7 +29,7 @@ def create_env(path = "./data/locations.csv",private_path = "./data/locations_pr
         transit_locations.append(TransitLocation(transit1,loc_dict[i[1]],i[2]))
         transit_locations.append(TransitLocation(transit2,loc_dict[i[0]],i[2]))
     config = ""
-    env = Environment(graph, graph2, locations,transit_locations,config)
+    env = Environment(graph, graph2, locations,transit_locations,cfg = config)
     return env
 
 def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
@@ -139,6 +139,7 @@ if __name__ == "__main__":
         sys.stdout = open("logs/log.txt", "w") 
     env = create_env()
     all_locs = [loc.name for loc in env.locations + env.transit_locations]
+
     print("Initializing Log")
     print("="*80)
     print("List of all Locations:")
@@ -152,8 +153,10 @@ if __name__ == "__main__":
     print("="*80)
     for i in agent_configs:
         env.add_agent(i)
+    #Parameter here is to set the timedelay which we do the simulation. 
+    env.set_tick(2)
     
-    for i in tqdm(range(10000)):
+    for i in tqdm(range(1000)):
          env.tick()
          env.check_locations()
     if to_log:

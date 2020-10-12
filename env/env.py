@@ -36,6 +36,10 @@ class TransitLocation(Location):
         for idx in to_remove[::-1]:
             a = self.agents.pop(idx)
             self.end.add(a)
+    def change_wait_time(self,new_wait_time):
+        self.wait_time = new_wait_time
+    def get_wait_time(self):
+        return self.wait_time
 
         
 
@@ -109,7 +113,7 @@ class Graph:
         return paths,solved
 
 class Environment:
-    def __init__(self,graph,private_graph,locations,transit_locations,cfg = None,log_path = "../logs/log.txt"):
+    def __init__(self,graph,private_graph,locations,transit_locations,timestep = 2,cfg = None,log_path = "../logs/log.txt"):
         self.graph = graph
         self.locations = locations
         self.transit_locations= transit_locations
@@ -117,8 +121,8 @@ class Environment:
         
         self.locmap = {loc.name: loc for loc in (locations + transit_locations)}
         self.log_path = log_path
-
-        self.timestep = timedelta(minutes=5)
+        print(timestep)
+        self.timestep = timedelta(minutes= timestep)
         self.start_time = time(hour = 0)
         self.time = datetime(2020,1,1,hour = 5)
         self.date = 0
@@ -142,7 +146,8 @@ class Environment:
                 travel_times[row,col] = t
         self.travel_times = travel_times
         
-
+    def set_tick(self,tick):
+        self.timestep = timedelta(minutes = tick)
     def tick(self):
         #Important function which basically signifies 1 timestep in the model
         self.time = self.time + self.timestep
@@ -176,7 +181,17 @@ class Environment:
         self.locmap[start_loc].add(a)
         return a
 
-
     def move_agent(self,agent,loc,new_loc):
         loc.remove(agent)
         new_loc.add(agent)
+    
+    def add_travel_time(self,loc_name,amt):
+        loc = self.locmap[loc_name]
+        curr_wait = loc.get_wait_time()
+        loc.change_wait_time(curr_wait + amt)
+    
+
+    def reduce_travel_time(self,loc_name,amt):
+        loc = self.locmap[loc_name]
+        curr_wait = loc.get_wait_time()
+        loc.change_wait_time(curr_wait - amt)
