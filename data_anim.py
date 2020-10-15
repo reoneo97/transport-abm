@@ -102,7 +102,7 @@ def load_data():
     map_df = map_df.merge(loc_data,on = "location")
     map_df.columns = [str(i) for i in map_df.columns]
     return map_df,trans_df
-def create_slider_plot(map_df,trans_df):
+def create_slider_plot1(map_df,trans_df):
     fig,ax = plt.subplots(figsize=(15,15))
     plt.subplots_adjust(left=0.25, bottom=0.25)
     timings = map_df.columns[5:]
@@ -134,4 +134,4 @@ if __name__ == "__main__":
     map_day = map_df.iloc[:,:end_time]
     trans_day = trans_df.iloc[:,:end_time]
 
-    create_slider_plot(map_day,trans_day)
+    create_slider_plot1(map_day,trans_day)
