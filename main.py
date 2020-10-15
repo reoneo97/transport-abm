@@ -154,7 +154,7 @@ if __name__ == "__main__":
     for i in agent_configs:
         env.add_agent(i)
     #Parameter here is to set the timedelay which we do the simulation. 
-    env.set_tick(2)
+    env.set_tick(5)
     
     for i in tqdm(range(1000)):
          env.tick()
