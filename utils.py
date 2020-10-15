@@ -26,14 +26,12 @@ def parse_log(path = "logs/log.txt"):
             time_idx.append(curr_time)
             loc_data = {loc:0 for loc in locations}
             i += 1
-            while lines[i][0] != "(":
+            while i < len(lines) and lines[i][0] != "(" :
                 k,v = lines[i].split(":")
                 loc_data[k] = v
                 i += 1
             for k,v in loc_data.items():
                 data[k].append(v)
-        
-        i+=1
     data = pd.DataFrame(data,index = time_idx)
     data.to_csv("logs/data.csv")
             

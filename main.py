@@ -156,7 +156,7 @@ if __name__ == "__main__":
     #Parameter here is to set the timedelay which we do the simulation. 
     env.set_tick(5)
     
-    for i in tqdm(range(1000)):
+    for i in tqdm(range(500)):
          env.tick()
          env.check_locations()
     if to_log:
