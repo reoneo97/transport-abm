@@ -8,7 +8,7 @@ from shapely.geometry import Polygon,LineString
 from math import sqrt
 from IPython.display import HTML
 from numpy.linalg import norm 
-from matplotlib.animation import FuncAnimation
+from matplotlib import animation
 from matplotlib.widgets import Slider, Button, RadioButtons
 from utils import parse_log
 
@@ -123,15 +123,55 @@ def create_slider_plot1(map_df,trans_df):
 
     stime.on_changed(update)
     plt.show()
+def create_animation(map_df,trans_df):
+    fig,ax = plt.subplots(figsize=(15,15))
+    #plt.subplots_adjust(left=0.25, bottom=0.25)
+    timings = map_df.columns[5:]
+    ims = []
+    im = map_df.plot(ax = ax, edgecolor = 'black',legend = True,column = timings[0],cmap = "PuBu",vmin = -200,vmax = 2000)
+    im = trans_df.plot(ax = ax, legend = True,column = timings[0],cmap = "Reds",vmin = -100,vmax = 700)
+    for i,time in enumerate(timings):
+        im = map_df.plot(ax = ax, edgecolor = 'black',legend = True,column = time,cmap = "PuBu",vmin = -200,vmax = 2000,animated = True)
+        im = trans_df.plot(ax = ax, legend = True,column = time,cmap = "Reds",vmin = -100,vmax = 700,animated = True)
+        fig.canvas.draw_idle()
+        ims.append([fig])
+        plt.clf()
+
+
+
+    ani = ArtistAnimation(fig, ims, interval=50, blit=True,repeat_delay=1000)
+    plt.show()
+def create_animation2(map_df,trans_df):
+    fig,ax = plt.subplots(figsize=(15,15))
+    #plt.subplots_adjust(left=0.25, bottom=0.25)
+    timings = map_df.columns[5:]
+    #print(timings)
+
+    def init():
+        map_df.plot(ax = ax, edgecolor = 'black',legend = True,column = timings[0],cmap = "PuBu",vmin = -200,vmax = 2000,
+                    legend_kwds={'shrink': 0.7})
+        trans_df.plot(ax = ax, legend = True,column = timings[0],cmap = "Reds",vmin = -100,vmax = 700,legend_kwds={'shrink': 0.7})
+
+    def animate(i):
+        time = timings[i]
+        map_df.plot(ax= ax,edgecolor = 'black',column = time,cmap = "PuBu",vmin = -200,vmax = 2000,legend_kwds={'shrink': 0.7})
+        trans_df.plot(ax= ax,column = time,cmap = "Reds",vmin = -100,vmax = 700,legend_kwds={'shrink': 0.7})
+        plt.title(time[11:])
+        print(time)
+    ani = animation.FuncAnimation(fig, animate, init_func=init, frames=len(timings), repeat = False,interval = 200)
+    with open("assets/videos/baseline.html", "w") as f:
+        print(ani.to_html5_video(), file=f)
+
 
 
 
 
 if __name__ == "__main__":
     map_df,trans_df = load_data()
+    #print(map_df.columns)
     start_time = 5
-    end_time = int(start_time + 60*24/5)
+    end_time = int(start_time + 60*17/5)
     map_day = map_df.iloc[:,:end_time]
     trans_day = trans_df.iloc[:,:end_time]
-
-    create_slider_plot1(map_day,trans_day)
+    create_animation2(map_day,trans_day)
+    #create_slider_plot1(map_day,trans_day) 
