@@ -123,3 +123,4 @@ dmypy.json
 
 ## My Ignores
 /data/locations_private.csv
+/assets/videos
