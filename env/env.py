@@ -19,23 +19,29 @@ class Location:
 
 class TransitLocation(Location):
     #Additional 
-    def __init__(self,name,end,wait_time):
+    def __init__(self,name,end,wait_time,capacity):
         super().__init__(name)
         self.end = end # This will be an actual location object not just the string
         assert(type(end)== Location)
         self.wait_time = wait_time
+        self.capacity = capacity
     def add(self,agent):
         agent.delay = self.wait_time
         self.agents.append(agent)
     def update(self):
         to_remove = []
-        for i,a in enumerate(self.agents):
+        in_capacity = self.agents[:self.capacity]
+        out_capacity = self.agents[self.capacity:]
+        for i,a in enumerate(in_capacity):
             w = a.update_delay(5)
             if w <= 0:
                 to_remove.append(i)
         for idx in to_remove[::-1]:
+            _ = in_capacity.pop(idx)
             a = self.agents.pop(idx)
+
             self.end.add(a)
+        self.agents = out_capacity + in_capacity
     def change_wait_time(self,new_wait_time):
         self.wait_time = new_wait_time
     def get_wait_time(self):
@@ -146,8 +152,8 @@ class Environment:
                 travel_times[row,col] = t
         self.travel_times = travel_times
         
-    def set_tick(self,tick):
-        self.timestep = timedelta(minutes = tick)
+    def set_tick(self,mins,secs):
+        self.timestep = timedelta(minutes = mins,seconds = secs)
     def tick(self):
         #Important function which basically signifies 1 timestep in the model
         self.time = self.time + self.timestep

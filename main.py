@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 from utils import *
 from easydict import EasyDict
 from tqdm import tqdm
+from utils import *
+from data_anim import *
 import sys 
 import random
 
 
 
-def create_env(path = "./data/locations.csv"):
+def create_env(path = "./data/locations.csv",capacity = 300):
     #Function to read the csv file of locations and the connectivity and return a graph
     graph = Graph()
     graph2 = Graph()
@@ -26,8 +28,8 @@ def create_env(path = "./data/locations.csv"):
         graph.add_edge(loc_dict[i[0]],loc_dict[i[1]],i[2])
         transit1 = i[0]+"->"+i[1]
         transit2 = i[1]+"->"+i[0]
-        transit_locations.append(TransitLocation(transit1,loc_dict[i[1]],i[2]))
-        transit_locations.append(TransitLocation(transit2,loc_dict[i[0]],i[2]))
+        transit_locations.append(TransitLocation(transit1,loc_dict[i[1]],i[2],capacity))
+        transit_locations.append(TransitLocation(transit2,loc_dict[i[0]],i[2],capacity))
     config = ""
     env = Environment(graph, graph2, locations,transit_locations,cfg = config)
     return env
@@ -51,7 +53,6 @@ def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
     school_start = np.random.choice(cfg.school_start, size = n_stud)
     school_end = np.random.choice(cfg.school_end,size = n_stud)
     agent_cfgs = []
-    dupes = 0
     for (i,j,k,l) in zip(stud_homes,stud_schools,school_start,school_end):
         r,c = loc2idx[i],loc2idx[j]
         time_diff = travel_times[r,c]
@@ -132,33 +133,60 @@ def add_time(t,t_delta):
 
 
 if __name__ == "__main__":
+
+    #Parameters to set to name the files
+    logs_folder = "logs/"
+    video_folder = "logs/videos/"
+    sim_name = "cap50"
+    capacity = 50
+    log_txt = logs_folder + sim_name + ".txt"
+    log_csv = logs_folder + sim_name + ".csv"
+    log_video = video_folder + sim_name + ".html"
     to_log = True
+
     np.random.seed(73)
     if to_log:    
         stdoutOrigin=sys.stdout 
-        sys.stdout = open("logs/log.txt", "w") 
-    env = create_env()
+        sys.stdout = open(log_txt, "w") 
+    env = create_env(capacity= capacity)
     all_locs = [loc.name for loc in env.locations + env.transit_locations]
 
     print("Initializing Log")
     print("="*80)
     print("List of all Locations:")
+
     for i in all_locs:print(i)
     cfg = generateConfig()          
     loc2idx = env.loc2idx
     travel_times = env.travel_times
     agent_configs = createAgents(cfg,loc2idx,travel_times)
+    
     print("="*80)
     print("Number of Agents:",len(agent_configs))
     print("="*80)
+    
     for i in agent_configs:
         env.add_agent(i)
     #Parameter here is to set the timedelay which we do the simulation. 
-    env.set_tick(5)
+    env.set_tick(5,0)
     
     for i in tqdm(range(500)):
          env.tick()
          env.check_locations()
+
     if to_log:
         sys.stdout.close()
         sys.stdout=stdoutOrigin
+    
+    # Parsing the .txt file and converting it to a .txt file
+    print("Parsing Log")
+    parse_log(log_txt,log_csv)
+
+    map_df,trans_df = load_data(log_csv)
+    start_time = 5
+    end_time = int(start_time + 60*17/5 + 6)
+
+    map_day = map_df.iloc[:,:end_time]
+    trans_day = trans_df.iloc[:,:end_time]
+    print("Creating Animation")
+    create_animation(map_day,trans_day,log_video)

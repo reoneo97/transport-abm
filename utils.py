@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np 
 from tqdm import tqdm 
 
-def parse_log(path = "logs/log.txt"):
+def parse_log(path,save_file):
     '''
     This utility function converts the log that was created by the simulation and converts it
     to a time-series csv which can then be more easily analysed and graphed. 
@@ -33,9 +33,9 @@ def parse_log(path = "logs/log.txt"):
             for k,v in loc_data.items():
                 data[k].append(v)
     data = pd.DataFrame(data,index = time_idx)
-    data.to_csv("logs/data.csv")
+    data.to_csv(save_file)
             
 
 
 if __name__ == "__main__":
-    parse_log()
+    parse_log("logs/cap50.txt","logs/cap50.csv")
