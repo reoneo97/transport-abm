@@ -34,7 +34,15 @@ def parse_log(path,save_file):
                 data[k].append(v)
     data = pd.DataFrame(data,index = time_idx)
     data.to_csv(save_file)
-            
+def average_travel_time(csv_path):
+    df = pd.read_csv(csv_path,index_col=0)
+    agents = df.iloc[0].sum()
+    transit_locs = [loc for loc in df.columns if ">" in loc ]
+    trans_df = df[transit_locs]
+    sums = trans_df.sum().sum()
+    return sums*5/agents/2
+
+
 
 
 if __name__ == "__main__":

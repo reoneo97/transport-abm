@@ -11,8 +11,6 @@ from data_anim import *
 import sys 
 import random
 
-
-
 def create_env(path = "./data/locations.csv",capacity = 300):
     #Function to read the csv file of locations and the connectivity and return a graph
     graph = Graph()
@@ -53,16 +51,21 @@ def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
     school_start = np.random.choice(cfg.school_start, size = n_stud)
     school_end = np.random.choice(cfg.school_end,size = n_stud)
     agent_cfgs = []
+    start_end = []
+    time_diffs = []
     for (i,j,k,l) in zip(stud_homes,stud_schools,school_start,school_end):
         r,c = loc2idx[i],loc2idx[j]
         time_diff = travel_times[r,c]
+        time_diffs.append(time_diff)
         mins = time_diff%60
         hrs = time_diff//60
         dt = -timedelta(minutes=mins,hours=hrs)
         k = add_time(k,dt)
         if i==j:continue
         agent_config = {"home":i,"dest":j,"start_work_time":k,"end_work_time":l}
+        start_end.append((i,j))
         agent_cfgs.append(agent_config)
+        
 
     #Creating Adults
     n_emp = int(cfg.prob_employee*n_agents*1.1)
@@ -74,19 +77,22 @@ def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
     start_delta = 60*np.random.randn(n_emp)
     start_delta = start_delta//15
     work_hours = np.random.choice(cfg.work_hours,size=n_emp,p =cfg.work_hours_prob)
-
+    
     for (i,j,k,l) in zip(emp_homes,emp_work,start_delta,work_hours):
         r,c = loc2idx[i],loc2idx[j]
         time_diff = travel_times[r,c]
+        time_diffs.append(time_diff)
         if i==j:continue
         start = default_start + timedelta(minutes = k)
         end = start + l
         start_time = start - timedelta(minutes = time_diff)
         agent_config = {"home":i,"dest":j,"start_work_time":start_time.time(),"end_work_time":end.time()}  
-        agent_cfgs.append(agent_config)      
-
+        agent_cfgs.append(agent_config)
+        start_end.append((i,j))      
     random.shuffle(agent_cfgs)
-    return agent_cfgs[:n_agents]
+
+    avg_time = np.array(time_diffs).mean()
+    return agent_cfgs[:n_agents],avg_time
 
 def generateConfig(path = "data/locations_data.csv"):
     #Function to generate the configuration file such as probability etc. from data that we have obtained
@@ -115,7 +121,7 @@ def generateConfig(path = "data/locations_data.csv"):
 
     #Timing Probability Distributions
     cfg["school_start"] = [time(7,15*i) for i in range(4)]
-    cfg["school_end"] = [time(13,15 + (15*i)) for i in range(3)] 
+    cfg["school_end"] = [time(13,15 + (15*i)) for i in range(2)] 
 
     #Working Hours
     cfg["work_hours_prob"] = [0.05,0.2,0.5,0.2,0.05]
@@ -130,18 +136,18 @@ def add_time(t,t_delta):
 
 
 
-
-
 if __name__ == "__main__":
 
     #Parameters to set to name the files
     logs_folder = "logs/"
     video_folder = "logs/videos/"
-    sim_name = "cap50"
-    capacity = 50
+
+    sim_name = "base"
+    capacity = 350
     log_txt = logs_folder + sim_name + ".txt"
     log_csv = logs_folder + sim_name + ".csv"
     log_video = video_folder + sim_name + ".html"
+
     to_log = True
 
     np.random.seed(73)
@@ -159,12 +165,12 @@ if __name__ == "__main__":
     cfg = generateConfig()          
     loc2idx = env.loc2idx
     travel_times = env.travel_times
-    agent_configs = createAgents(cfg,loc2idx,travel_times)
+    agent_configs,avg_time = createAgents(cfg,loc2idx,travel_times)
     
     print("="*80)
     print("Number of Agents:",len(agent_configs))
     print("="*80)
-    
+
     for i in agent_configs:
         env.add_agent(i)
     #Parameter here is to set the timedelay which we do the simulation. 
@@ -177,16 +183,20 @@ if __name__ == "__main__":
     if to_log:
         sys.stdout.close()
         sys.stdout=stdoutOrigin
-    
+    print(f"Ideal Average Time: {avg_time} minutes")
+
     # Parsing the .txt file and converting it to a .txt file
     print("Parsing Log")
     parse_log(log_txt,log_csv)
+    avg_time2 = average_travel_time(log_csv)
+    print(f"Actual Average Time: {avg_time2} minutes")
 
     map_df,trans_df = load_data(log_csv)
+
     start_time = 5
     end_time = int(start_time + 60*17/5 + 6)
 
-    map_day = map_df.iloc[:,:end_time]
+    map_day = map_df.iloc[:,:end_time]  
     trans_day = trans_df.iloc[:,:end_time]
     print("Creating Animation")
-    create_animation(map_day,trans_day,log_video)
+    create_animation(map_day,trans_day,log_video,"mp4")
