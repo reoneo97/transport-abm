@@ -10,11 +10,16 @@ from utils import *
 from data_anim import *
 import sys 
 import random
+import os
 
 def create_env(path = "./data/locations.csv",capacity = 300):
-    #Function to read the csv file of locations and the connectivity and return a graph
+    '''
+    Initialization function to create the transport network for the simulation
+    Transport network is being represented by a weighted directed graph
+    path - csv file which provides the names of the different nodes and the corresponding weights
+    capacity - capacity of each station, in this model capacities of the different models are the same
+    '''
     graph = Graph()
-    graph2 = Graph()
     df = pd.read_csv(path)
 
     locations_str = set(df["loc1"].tolist()+df["loc2"].tolist())
@@ -23,13 +28,14 @@ def create_env(path = "./data/locations.csv",capacity = 300):
     transit_locations = []
 
     for i in df.values.tolist():
-        graph.add_edge(loc_dict[i[0]],loc_dict[i[1]],i[2])
+        weight = i[2]
+        graph.add_edge(loc_dict[i[0]],loc_dict[i[1]],weight)
         transit1 = i[0]+"->"+i[1]
         transit2 = i[1]+"->"+i[0]
-        transit_locations.append(TransitLocation(transit1,loc_dict[i[1]],i[2],capacity))
-        transit_locations.append(TransitLocation(transit2,loc_dict[i[0]],i[2],capacity))
+        transit_locations.append(TransitLocation(transit1,loc_dict[i[1]],weight,capacity))
+        transit_locations.append(TransitLocation(transit2,loc_dict[i[0]],weight,capacity))
     config = ""
-    env = Environment(graph, graph2, locations,transit_locations,cfg = config)
+    env = Environment(graph,locations,transit_locations,cfg = config)
     return env
 
 def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
@@ -91,7 +97,7 @@ def createAgents(cfg,loc2idx,travel_times, n_agents = 10000):
         start_end.append((i,j))      
     random.shuffle(agent_cfgs)
 
-    avg_time = np.array(time_diffs).mean()
+    avg_time = np.array(time_diffs).mean()*1.1
     return agent_cfgs[:n_agents],avg_time
 
 def generateConfig(path = "data/locations_data.csv"):
@@ -133,27 +139,19 @@ def add_time(t,t_delta):
     dt = datetime.combine(date.today(), t)
     dt = dt + t_delta
     return dt.time()
+def capacity_sim(capacity):
 
-
-
-if __name__ == "__main__":
-
-    #Parameters to set to name the files
-    logs_folder = "logs/"
-    video_folder = "logs/videos/"
-
-    sim_name = "base"
-    capacity = 350
-    log_txt = logs_folder + sim_name + ".txt"
-    log_csv = logs_folder + sim_name + ".csv"
-    log_video = video_folder + sim_name + ".html"
-
-    to_log = True
-
+    logs_folder = "logs/capacity/"
+    if not os.path.exists(logs_folder):
+         os.makedirs(logs_folder)
+    log_txt = logs_folder + "capacity" + str(capacity) + ".txt"
+    log_csv = logs_folder + "capacity" + str(capacity) + ".csv"
     np.random.seed(73)
-    if to_log:    
-        stdoutOrigin=sys.stdout 
-        sys.stdout = open(log_txt, "w") 
+
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    stdoutOrigin=sys.stdout 
+    sys.stdout = open(log_txt, "w")
     env = create_env(capacity= capacity)
     all_locs = [loc.name for loc in env.locations + env.transit_locations]
 
@@ -173,30 +171,148 @@ if __name__ == "__main__":
 
     for i in agent_configs:
         env.add_agent(i)
-    #Parameter here is to set the timedelay which we do the simulation. 
     env.set_tick(5,0)
     
     for i in tqdm(range(500)):
          env.tick()
-         env.check_locations()
-
-    if to_log:
-        sys.stdout.close()
-        sys.stdout=stdoutOrigin
-    print(f"Ideal Average Time: {avg_time} minutes")
-
-    # Parsing the .txt file and converting it to a .txt file
+         env.check_locations() 
+    sys.stdout.close()
+    sys.stdout=stdoutOrigin
     print("Parsing Log")
     parse_log(log_txt,log_csv)
     avg_time2 = average_travel_time(log_csv)
+    print(f"Ideal Average Time: {avg_time} minutes")
+    print(f"Actual Average Time: {avg_time2} minutes")
+def delay_sim(delay_loc):
+    
+    logs_folder = "logs/node_delay/"
+    if not os.path.exists(logs_folder):
+         os.makedirs(logs_folder)
+    log_txt = logs_folder + "delay" + delay_loc + ".txt"
+    log_csv = logs_folder + "delay" + delay_loc + ".csv"
+    np.random.seed(73)
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    stdoutOrigin=sys.stdout 
+    sys.stdout = open(log_txt, "w")
+    env = create_env(capacity = 300)
+    all_locs = [loc.name for loc in env.locations + env.transit_locations]
+
+    print("Initializing Log")
+    print("="*80)
+    print("List of all Locations:")
+
+    for i in all_locs:print(i)
+    cfg = generateConfig()          
+    loc2idx = env.loc2idx
+    travel_times = env.travel_times
+    agent_configs,avg_time = createAgents(cfg,loc2idx,travel_times)
+    
+    print("="*80)
+    print("Number of Agents:",len(agent_configs))
+    print("="*80)
+    #Doing the delay
+    affected = [loc.name for loc in env.transit_locations if delay_loc in loc.name]
+
+
+    for i in agent_configs:
+        env.add_agent(i)
+    env.set_tick(5,0)
+    
+    for i in tqdm(range(24)):
+         env.tick()
+         env.check_locations() 
+    for loc in affected:
+        env.add_travel_time(loc,10)
+    for i in tqdm(range(72)):
+         env.tick()
+         env.check_locations() 
+    for loc in affected:
+        env.reduce_travel_time(loc,10)
+    for i in tqdm(range(404)):
+         env.tick()
+         env.check_locations() 
+
+    sys.stdout.close()
+    sys.stdout=stdoutOrigin
+    print("Parsing Log")
+    parse_log(log_txt,log_csv)
+    avg_time2 = average_travel_time(log_csv)
+    print(f"Delay on {delay_loc}")
+    print(affected)
+    print(f"Ideal Average Time: {avg_time} minutes")
     print(f"Actual Average Time: {avg_time2} minutes")
 
-    map_df,trans_df = load_data(log_csv)
 
-    start_time = 5
-    end_time = int(start_time + 60*17/5 + 6)
 
-    map_day = map_df.iloc[:,:end_time]  
-    trans_day = trans_df.iloc[:,:end_time]
-    print("Creating Animation")
-    create_animation(map_day,trans_day,log_video,"mp4")
+if __name__ == "__main__":
+    ls = ['Paya Lebar', 'Punggol', 'Jurong', 'Tiong Bahru', 'Serangoon', 'Tampines',
+        'Tuas','CCK', 'Woodlands', 'Buona', 'CBD', 'Town', 'Bishan', 'Toa Payoh']
+    for l in ls:
+        delay_sim(l)
+    # #Parameters to set to name the files
+    # logs_folder = "logs/"
+    # video_folder = "logs/videos/"
+    # if not os.path.exists('logs'):
+    #     os.makedirs('logs')
+
+    # sim_name = "base"
+    # capacity = 300
+    # log_txt = logs_folder + sim_name + ".txt"
+    # log_csv = logs_folder + sim_name + ".csv"
+    # log_video = video_folder + sim_name + ".html"
+
+    # to_log = True #Almost always set this to true
+    # to_video =True #Only set to true if you want to save the video of the simulation 
+    
+    # np.random.seed(73)
+    # if to_log:    
+    #     stdoutOrigin=sys.stdout 
+    #     sys.stdout = open(log_txt, "w") 
+    # env = create_env(capacity= capacity)
+    # all_locs = [loc.name for loc in env.locations + env.transit_locations]
+
+    # print("Initializing Log")
+    # print("="*80)
+    # print("List of all Locations:")
+
+    # for i in all_locs:print(i)
+    # cfg = generateConfig()          
+    # loc2idx = env.loc2idx
+    # travel_times = env.travel_times
+    # agent_configs,avg_time = createAgents(cfg,loc2idx,travel_times)
+    
+    # print("="*80)
+    # print("Number of Agents:",len(agent_configs))
+    # print("="*80)
+
+    # for i in agent_configs:
+    #     env.add_agent(i)
+    # #Parameter here is to set the timedelay which we do the simulation. 
+    # env.set_tick(5,0)
+    
+    # for i in tqdm(range(500)):
+    #      env.tick()
+    #      env.check_locations()
+
+    # if to_log:
+    #     sys.stdout.close()
+    #     sys.stdout=stdoutOrigin
+    # print(f"Ideal Average Time: {avg_time} minutes")
+
+    # # Parsing the .txt file and converting it to a .txt file
+    # print("Parsing Log")
+    # parse_log(log_txt,log_csv)
+    # avg_time2 = average_travel_time(log_csv)
+    # print(f"Actual Average Time: {avg_time2} minutes")
+
+    # map_df,trans_df = load_data(log_csv)
+    # if to_video:
+    #     start_time = 5
+    #     end_time = int(start_time + 60*17/5 + 6)
+
+    #     map_day = map_df.iloc[:,:end_time]  
+    #     trans_day = trans_df.iloc[:,:end_time]
+
+    #     print("Creating Animation")
+    #     create_animation(map_day,trans_day,log_video,"mp4")

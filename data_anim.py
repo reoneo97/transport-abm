@@ -9,8 +9,7 @@ from math import sqrt
 from IPython.display import HTML
 from numpy.linalg import norm 
 from matplotlib import animation
-from matplotlib.widgets import Slider, Button, RadioButtons
-from utils import parse_log
+from matplotlib.widgets import Slider
 
 def load_data(filename):
     df = pd.read_csv(filename,index_col = 0)
@@ -144,7 +143,7 @@ def create_animation(map_df,trans_df,save_file,video_format):
         with open(save_file, "w") as f:
             print(ani.to_html5_video(), file=f)
     elif video_format == "mp4":
-        mywriter = animation.FFMpegWriter(fps=5)
+        mywriter = animation.FFMpegWriter(fps=8)
         mp4_name = save_file[:-5] + ".mp4"
         ani.save(mp4_name, mywriter)
 
@@ -159,5 +158,5 @@ if __name__ == "__main__":
     end_time = int(start_time + 60*17/5 + 6)
     map_day = map_df.iloc[:,:end_time]
     trans_day = trans_df.iloc[:,:end_time]
-    create_animation(map_day,trans_day,"cap50.html")
+    create_animation(map_day,trans_day,"cap50.html","mp4")
     #create_slider_plot1(map_day,trans_day) 
