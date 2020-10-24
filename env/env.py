@@ -46,9 +46,8 @@ class TransitLocation(Location):
         self.wait_time = new_wait_time
     def get_wait_time(self):
         return self.wait_time
-
-        
-
+    def change_capacity(self,new_capacity):
+        self.capacity = new_capacity
 
 
 class Graph:
@@ -201,3 +200,6 @@ class Environment:
         loc = self.locmap[loc_name]
         curr_wait = loc.get_wait_time()
         loc.change_wait_time(curr_wait - amt)
+    def change_capacity(self,loc_name,new_capacity):
+        loc = self.locmap[loc_name]
+        loc.change_capacity(new_capacity)

@@ -12,7 +12,7 @@ import sys
 import random
 import os
 
-def create_env(path = "./data/locations.csv",capacity = 300):
+def create_env(path = "./data/locations.csv",capacity = 300,to_drop = None):
     '''
     Initialization function to create the transport network for the simulation
     Transport network is being represented by a weighted directed graph
@@ -27,7 +27,8 @@ def create_env(path = "./data/locations.csv",capacity = 300):
     locations = list(loc_dict.values())
     transit_locations = []
 
-    for i in df.values.tolist():
+    for idx,i in enumerate(df.values.tolist()):
+        if idx == to_drop: continue
         weight = i[2]
         graph.add_edge(loc_dict[i[0]],loc_dict[i[1]],weight)
         transit1 = i[0]+"->"+i[1]
@@ -139,6 +140,7 @@ def add_time(t,t_delta):
     dt = datetime.combine(date.today(), t)
     dt = dt + t_delta
     return dt.time()
+    
 def capacity_sim(capacity):
 
     logs_folder = "logs/capacity/"
@@ -183,6 +185,7 @@ def capacity_sim(capacity):
     avg_time2 = average_travel_time(log_csv)
     print(f"Ideal Average Time: {avg_time} minutes")
     print(f"Actual Average Time: {avg_time2} minutes")
+
 def delay_sim(delay_loc):
     
     logs_folder = "logs/node_delay/"
@@ -243,20 +246,96 @@ def delay_sim(delay_loc):
     print(f"Ideal Average Time: {avg_time} minutes")
     print(f"Actual Average Time: {avg_time2} minutes")
 
+def breakdown_sim(sim_name,breakdown_edges,breakdown_start,breakdown_duration,new_cap = 0,to_video = False):
+    '''
+    One way to simulate a train breakdown is to simply let capacity become 0 for a certain amount of time 
+    '''
+
+    logs_folder = "logs/breakdown/"
+    video_folder = "logs/videos/"
+    if not os.path.exists(logs_folder):
+         os.makedirs(logs_folder)
+    log_txt = logs_folder + sim_name + ".txt"
+    log_csv = logs_folder + sim_name + ".csv"
+    log_video = video_folder + sim_name + ".html"
+    np.random.seed(73)
+
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    stdoutOrigin=sys.stdout 
+    sys.stdout = open(log_txt, "w")
+    env = create_env(capacity= 300)
+    all_locs = [loc.name for loc in env.locations + env.transit_locations]
+
+    print("Initializing Log")
+    print("="*80)
+    print("List of all Locations:")
+
+    for i in all_locs:print(i)
+    cfg = generateConfig()          
+    loc2idx = env.loc2idx
+    travel_times = env.travel_times
+    agent_configs,avg_time = createAgents(cfg,loc2idx,travel_times)
+    
+    print("="*80)
+    print("Number of Agents:",len(agent_configs))
+    print("="*80)
+
+    for i in agent_configs:
+        env.add_agent(i)
+    env.set_tick(5,0)
+    
+    for i in tqdm(range(breakdown_start)):
+         env.tick()
+         env.check_locations() 
+    for loc in breakdown_edges:
+        env.change_capacity(loc,new_cap)
+        
+    for i in tqdm(range(breakdown_duration)):
+         env.tick()
+         env.check_locations() 
+    for loc in breakdown_edges:
+        env.change_capacity(loc,300)
+    remaining = 500 - breakdown_duration - breakdown_start
+    for i in tqdm(range(remaining)):
+         env.tick()
+         env.check_locations() 
+    sys.stdout.close()
+    sys.stdout=stdoutOrigin
+    print("Parsing Log")
+    parse_log(log_txt,log_csv)
+    avg_time2 = average_travel_time(log_csv)
+    print(f"Ideal Average Time: {avg_time} minutes")
+    print(f"Actual Average Time: {avg_time2} minutes")
+    map_df,trans_df = load_data(log_csv)
+
+    if to_video:
+        start_time = 5
+        end_time = int(start_time + 60*17/5 + 6)
+
+        map_day = map_df.iloc[:,:end_time]  
+        trans_day = trans_df.iloc[:,:end_time]
+
+        print("Creating Animation")
+        create_animation(map_day,trans_day,log_video,"mp4")
+
 
 
 if __name__ == "__main__":
-    ls = ['Paya Lebar', 'Punggol', 'Jurong', 'Tiong Bahru', 'Serangoon', 'Tampines',
-        'Tuas','CCK', 'Woodlands', 'Buona', 'CBD', 'Town', 'Bishan', 'Toa Payoh']
-    for l in ls:
-        delay_sim(l)
-    # #Parameters to set to name the files
+
+    edges = ["Bishan->Buona","Buona->Bishan"]
+    start = 30
+    duration = 60
+    cfg = generateConfig()  
+    print(cfg.prob_student,cfg.prob_employee)
+    #breakdown_sim("breakdown_multiple_bus",edges,start,duration,to_video = True,new_cap = 75)
+    #Parameters to set to name the files
     # logs_folder = "logs/"
     # video_folder = "logs/videos/"
     # if not os.path.exists('logs'):
     #     os.makedirs('logs')
 
-    # sim_name = "base"
+    # sim_name = "breakdown"
     # capacity = 300
     # log_txt = logs_folder + sim_name + ".txt"
     # log_csv = logs_folder + sim_name + ".csv"
@@ -269,7 +348,7 @@ if __name__ == "__main__":
     # if to_log:    
     #     stdoutOrigin=sys.stdout 
     #     sys.stdout = open(log_txt, "w") 
-    # env = create_env(capacity= capacity)
+    # env = create_env(capacity= capacity,to_drop=16)
     # all_locs = [loc.name for loc in env.locations + env.transit_locations]
 
     # print("Initializing Log")
@@ -316,3 +395,14 @@ if __name__ == "__main__":
 
     #     print("Creating Animation")
     #     create_animation(map_day,trans_day,log_video,"mp4")
+
+
+    # ========== Simulate Node Delays ================
+    # ls = ['Paya Lebar', 'Punggol', 'Jurong', 'Tiong Bahru', 'Serangoon', 'Tampines',
+    #     'Tuas','CCK', 'Woodlands', 'Buona', 'CBD', 'Town', 'Bishan', 'Toa Payoh']
+    # for l in ls:
+    #     delay_sim(l)
+
+    # ========== Simulate Capacity  ================
+    # for i in range(50,1001,50)
+    #     capacity_sim(i)
