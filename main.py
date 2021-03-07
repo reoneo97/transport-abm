@@ -327,7 +327,6 @@ if __name__ == "__main__":
     start = 30
     duration = 60
     cfg = generateConfig()  
-    print(cfg.prob_student,cfg.prob_employee)
     #breakdown_sim("breakdown_multiple_bus",edges,start,duration,to_video = True,new_cap = 75)
     #Parameters to set to name the files
     # logs_folder = "logs/"
