@@ -11,17 +11,9 @@ Each agent has a `home_location` and a `work_location` and they travel to and fr
 
 ## Demo
 
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true" poster="assets/poster.png">
-    <source src="./assets/base.mp4" type="video/mp4">
-  </video>
-</figure>
 
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true" poster="assets/poster.png">
-    <source src="[assets/base.mp4](https://user-images.githubusercontent.com/52419450/122032160-f5428a80-ce01-11eb-832c-1a5f2d7a89ca.mp4)" type="video/mp4">
-  </video>
-</figure>
+https://user-images.githubusercontent.com/52419450/122034029-b0b7ee80-ce03-11eb-9d23-201a37608dda.mp4
+
 
 
 ## Data
